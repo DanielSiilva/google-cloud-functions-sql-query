@@ -12,8 +12,8 @@ functions.http("helloHttp", (req, res) => {
     .catch((err) => {
       console.error("Erro ao acessar o banco de dados:", err);
       res.status(500).send("Erro ao acessar o banco de dados");
-    })
-    .finally(() => {
-      knex.destroy();
     });
+  // .finally(() => {
+  //   knex.destroy();
+  // });
 });
