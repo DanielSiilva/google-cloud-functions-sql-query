@@ -66,8 +66,8 @@ functions.http("helloHttp", async (req, res) => {
       pageInfo: {
         page,
         pageSize,
-        totalCount,
         totalPages,
+        totalCount,
       },
     });
   } catch (error) {
