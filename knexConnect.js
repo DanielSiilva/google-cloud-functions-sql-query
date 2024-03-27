@@ -3,16 +3,17 @@ const knexConfig = require("./knexfile");
 const knex = require("knex")(knexConfig);
 
 functions.http("helloHttp", (req, res) => {
-  knex("users")
-    .first("name")
-    .then((user) => {
-      res.send(`Hello ${user.name}!`);
+  // res.send(`Hello ${req.query.name || req.body.name || "World"}!`);
+  knex("EmailSent")
+    .limit(10)
+    .then((data) => {
+      res.json(data);
     })
     .catch((err) => {
       console.error("Erro ao acessar o banco de dados:", err);
       res.status(500).send("Erro ao acessar o banco de dados");
-    })
-    .finally(() => {
-      knex.destroy();
     });
+  // .finally(() => {
+  //   knex.destroy();
+  // });
 });
