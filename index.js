@@ -36,6 +36,12 @@ functions.http("helloHttp", async (req, res) => {
     });
   }
 
+  const tableNameMatch = sql.match(/FROM dbo\.(\w+)/i);
+  const tableExists = await knex.schema.hasTable(tableNameMatch[1]);
+  if (!tableExists) {
+    return res.status(404).json({ message: "Table not found." });
+  }
+
   const offset = (page - 1) * pageSize;
 
   try {
