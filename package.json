@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@google-cloud/functions-framework": "^3.0.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "knex": "^3.1.0",
+    "mysql": "^2.18.1"
   },
   "scripts": {
     "start": "functions-framework --target=helloHttp"
