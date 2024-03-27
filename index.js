@@ -11,7 +11,8 @@ functions.http("helloHttp", async (req, res) => {
   let id = "ID" || "id" || "Id";
   const orderByColumn = req.body.orderByColumn || id;
   const page = parseInt(req.body.page || req.query.page || 1, 10);
-  const pageSize = parseInt(req.body.pageSize || req.query.pageSize || 30, 10);
+
+  let pageSize = parseInt(req.body.pageSize || req.query.pageSize || 100, 10);
 
   if (!authHeader) {
     return res
@@ -40,6 +41,10 @@ functions.http("helloHttp", async (req, res) => {
   try {
     const countQuery = `SELECT COUNT(*) AS totalCount FROM (${sql}) AS count_table`;
     const countResult = await knex.raw(countQuery);
+
+    if (countResult[0].totalCount < 100) {
+      pageSize = countResult[0].totalCount;
+    }
 
     const totalCount = parseInt(countResult[0].totalCount, 10);
 
