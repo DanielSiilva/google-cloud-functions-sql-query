@@ -1,8 +1,9 @@
+require("dotenv").config();
 const functions = require("@google-cloud/functions-framework");
 const knexConfig = require("./knexfile");
 const knex = require("knex")(knexConfig);
 
-const BEARER_TOKEN = "teste_token";
+const BEARER_TOKEN = process.env.TOKEN;
 
 functions.http("helloHttp", async (req, res) => {
   const authHeader = req.headers.authorization;
