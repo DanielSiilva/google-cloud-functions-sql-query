@@ -12,6 +12,8 @@ module.exports = {
       encrypt: true,
       enableArithAbort: true,
       trustServerCertificate: true,
+      connectTimeout: 600000,
+      requestTimeout: 600000,
     },
   },
 };

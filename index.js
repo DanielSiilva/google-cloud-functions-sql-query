@@ -7,7 +7,7 @@ const BEARER_TOKEN = process.env.TOKEN;
 
 functions.http("helloHttp", async (req, res) => {
   const authHeader = req.headers.authorization;
-  const sql = req.body.name;
+  const sql = req.body.query;
 
   if (!authHeader) {
     return res
@@ -40,6 +40,8 @@ functions.http("helloHttp", async (req, res) => {
     });
   } catch (error) {
     console.error("Error executing SQL query:", error);
-    res.status(500).send("Internal server error");
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 });
