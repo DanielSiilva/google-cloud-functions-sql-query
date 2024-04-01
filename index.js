@@ -5,7 +5,7 @@ const knex = require("knex")(knexConfig);
 
 const BEARER_TOKEN = process.env.TOKEN;
 
-async function sendConcurrentData(url, data, token, maxConcurrent = 10) {
+async function sendConcurrentData(url, data, token, maxConcurrent = 5) {
   let baseDelay = 5000;
 
   async function sendItem(item) {
@@ -29,7 +29,7 @@ async function sendConcurrentData(url, data, token, maxConcurrent = 10) {
     }
 
     baseDelay =
-      duration < 3000 ? Math.max(baseDelay - 100, 1000) : baseDelay + 100;
+      duration < 3000 ? Math.max(baseDelay - 100, 2500) : baseDelay + 100;
 
     if (response.status === 429) {
       baseDelay = 10000;
