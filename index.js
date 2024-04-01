@@ -5,17 +5,17 @@ const knex = require("knex")(knexConfig);
 
 const BEARER_TOKEN = process.env.TOKEN;
 
-async function sendData(url, data, batchsize, token) {
-  for (let i = 0; i < data.length; i += batchsize) {
-    const batch = data.slice(i, i + batchsize);
+async function sendConcurrentData(url, data, token, maxConcurrent = 10) {
+  console.log("URL in sendConcurrentData function:", url);
 
+  async function sendItem(item) {
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(batch),
+      body: JSON.stringify(item),
     });
 
     if (!response.ok) {
@@ -24,10 +24,21 @@ async function sendData(url, data, batchsize, token) {
       );
     }
 
-    const responseData = await response.json();
-    console.log("🚀 ~ Batch sent successfully", responseData);
+    return response.json();
+  }
 
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+  for (let i = 0; i < data.length; i += maxConcurrent) {
+    const batch = data.slice(i, i + maxConcurrent);
+    console.log(`Sending batch of ${batch.length} items...`);
+
+    await Promise.all(batch.map((item) => sendItem(item)))
+      .then((responses) => {
+        console.log("Batch sent successfully:", responses);
+      })
+      .catch((error) => {
+        console.error("Error sending batch:", error);
+      });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 }
 
@@ -36,7 +47,6 @@ functions.http("helloHttp", async (req, res) => {
   const query = req.body.query;
   const type = req.body.return_type;
   const endpoint = req.body.return_endpoint;
-  console.log("🚀 ~ functions.http ~ endpoint:", endpoint);
   const bearer_token = req.body.return_bearer_token;
 
   if (!type) {
@@ -71,11 +81,8 @@ functions.http("helloHttp", async (req, res) => {
 
       try {
         const dataResult = await knex.raw(query);
-        const data = dataResult;
 
-        res.json({
-          data,
-        });
+        res.json(dataResult);
       } catch (error) {
         console.error("Error executing SQL query:", error);
         res
@@ -94,7 +101,7 @@ functions.http("helloHttp", async (req, res) => {
       const dataForEndpoint = await knex.raw(query);
       const data = dataForEndpoint;
 
-      sendData(endpoint, data, 5, bearer_token)
+      sendConcurrentData(endpoint, data, bearer_token)
         .then(() => {
           console.log("Todos os lotes foram enviados com sucesso");
           res.status(200).json({ message: "Data sent successfully" });
