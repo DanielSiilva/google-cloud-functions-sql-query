@@ -20,7 +20,7 @@ export default async ({ data }) => {
       continue;
     }
 
-    console.log(`Ping host='${endereco_ip_acesso}'`);
+    // console.log(`Ping host='${endereco_ip_acesso}'`);
 
     const pingResponse = await ping.promise
       .probe(endereco_ip_acesso, {
