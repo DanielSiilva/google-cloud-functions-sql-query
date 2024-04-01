@@ -6,9 +6,10 @@ const knex = require("knex")(knexConfig);
 const BEARER_TOKEN = process.env.TOKEN;
 
 async function sendConcurrentData(url, data, token, maxConcurrent = 10) {
-  console.log("URL in sendConcurrentData function:", url);
+  let baseDelay = 5000;
 
   async function sendItem(item) {
+    const startTime = Date.now();
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -17,6 +18,9 @@ async function sendConcurrentData(url, data, token, maxConcurrent = 10) {
       },
       body: JSON.stringify(item),
     });
+    const endTime = Date.now();
+
+    const duration = endTime - startTime;
 
     if (!response.ok) {
       throw new Error(
@@ -24,12 +28,21 @@ async function sendConcurrentData(url, data, token, maxConcurrent = 10) {
       );
     }
 
+    baseDelay =
+      duration < 3000 ? Math.max(baseDelay - 100, 1000) : baseDelay + 100;
+
+    if (response.status === 429) {
+      baseDelay = 10000;
+    }
+
     return response.json();
   }
 
   for (let i = 0; i < data.length; i += maxConcurrent) {
     const batch = data.slice(i, i + maxConcurrent);
-    console.log(`Sending batch of ${batch.length} items...`);
+    console.log(
+      `Sending batch of ${batch.length} items with ${baseDelay}ms delay...`
+    );
 
     await Promise.all(batch.map((item) => sendItem(item)))
       .then((responses) => {
@@ -38,7 +51,8 @@ async function sendConcurrentData(url, data, token, maxConcurrent = 10) {
       .catch((error) => {
         console.error("Error sending batch:", error);
       });
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    await new Promise((resolve) => setTimeout(resolve, baseDelay));
   }
 }
 
